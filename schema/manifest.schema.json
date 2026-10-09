@@ -1,0 +1,151 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "$id": "https://raw.githubusercontent.com/hpma-bits/hpma-quizbank/main/schema/manifest.schema.json",
+ "title": "HPMA 课堂答题题库数据包 manifest.json",
+ "description": "数据包清单（hpma-bits/hpma-quizbank 专用，结构精简——单数据集无需 datasets 注册表以外的包级扩展位）。v1 (2026-10-09)：单数据集 quiz（魔法史 + 麻瓜研究双 bank，文件 quiz.json）。coverage.teacher_restate_option1 记录讲解逐字复述 option1 的题数——该比例是 option1 恒正确约定的健康度指标，热更后骤降应怀疑官方改了答案存储机制。",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "data_version",
+  "generated_at",
+  "locales",
+  "datasets",
+    "coverage",
+  "notes"
+ ],
+ "properties": {
+  "schema_version": {
+   "type": "integer",
+   "minimum": 1,
+   "description": "与 quiz.json 一致"
+  },
+  "data_version": {
+   "type": "integer",
+   "minimum": 1,
+   "description": "与 quiz.json 一致（YYYYMMDD）"
+  },
+  "generated_at": {
+   "type": "string",
+   "format": "date-time",
+   "description": "ISO8601 带时区偏移"
+  },
+  "locales": {
+   "type": "array",
+   "minItems": 1,
+   "uniqueItems": true,
+   "items": {
+    "enum": [
+     "zh",
+     "en"
+    ]
+   }
+  },
+  "datasets": {
+   "type": "array",
+   "description": "数据集注册表：id 与文件一一对应，消费端按 id 取数",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "file",
+     "count"
+    ],
+    "properties": {
+     "id": {
+      "enum": [
+       "quiz"
+      ]
+     },
+     "file": {
+      "type": "string",
+      "pattern": "^quiz\\.json$"
+     },
+     "count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "题目总数（各 bank 之和）"
+     }
+    }
+   }
+  }  "coverage": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "banks",
+    "questions",
+    "bilingual",
+    "answer_conflicts",
+    "ugc_questions",
+    "duplicate_questions",
+    "teacher_restate_option1"
+   ],
+   "properties": {
+    "banks": {
+     "type": "integer",
+     "minimum": 1,
+     "description": "bank 数（v1 = 2）"
+    },
+    "questions": {
+     "type": "object",
+     "description": "各 bank 题数，键为 bank id",
+     "propertyNames": {
+      "enum": [
+       "history_of_magic",
+       "muggle_studies"
+      ]
+     },
+     "additionalProperties": {
+      "type": "integer",
+      "minimum": 0
+     }
+    },
+    "bilingual": {
+     "type": "integer",
+     "minimum": 0,
+     "description": "zh+en 全字段非空的题数（应等于总题数；题库悬空键即导出失败）"
+    },
+    "answer_conflicts": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^[a-z_]+:[0-9]+$"
+     },
+     "description": "讲解与 option1 约定冲突的题，格式 bank:question_id（v1 = [\"history_of_magic:101301103\"]）"
+    },
+    "ugc_questions": {
+     "type": "integer",
+     "minimum": 0,
+     "description": "带 provider_name 的玩家出题数（v1 = 568，均在魔法史侧）"
+    },
+    "duplicate_questions": {
+     "type": "integer",
+      "minimum": 0,
+     "description": "duplicate_of 非空的题数（题干复用池）"
+    },
+    "teacher_restate_option1": {
+     "type": "object",
+     "description": "讲解归一化后复述 option1 文本的题数（答案约定健康度指标；v1 实测 history 1152/1223、muggle 493/624，其余为同义改写零反例）。键为 bank id",
+     "propertyNames": {
+      "enum": [
+       "history_of_magic",
+       "muggle_studies"
+      ]
+     },
+     "additionalProperties": {
+      "type": "integer",
+      "minimum": 0
+     }
+    }
+   }
+  },
+  "notes": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "description": "给消费端的注意事项；答案顺序警告（源序未洗牌、正确恒在 options[0]）必须出现在这里"
+  }
+ }
+}
