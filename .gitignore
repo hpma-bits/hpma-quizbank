@@ -1,0 +1,5 @@
+# OS cruft only — data files (quiz.json, manifest.json, schema/, check.html)
+# MUST be committed; they are synced by the publishing pipeline.
+.DS_Store
+Thumbs.db
+desktop.ini
