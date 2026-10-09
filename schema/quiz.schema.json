@@ -1,0 +1,239 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "$id": "https://raw.githubusercontent.com/hpma-bits/hpma-quizbank/main/schema/quiz.schema.json",
+ "title": "HPMA 课堂答题题库数据包 quiz.json（v1）",
+ "description": "hpma-bits/hpma-quizbank 的主数据文件：魔法史与麻瓜研究两个课堂的答题题库（v1 实测 1223 + 624 = 1847 题）。生产管线 extract_history_quiz.py / extract_muggle_studies.py（dbx 表 → out/ 中间产物，重跑自动 diff）→ export_class_quiz_bundle.py（组包 + EN 对译核验 + 本 schema 校验）。数据源：dbx_new\\history_question_bank 与 dbx_new\\moggle_question_bank（游戏源码把 muggle 拼作 moggle），全部字段是键、文案经 class_text_cn/en 解析为中英双语（实测 100% 覆盖，悬空键即导出失败——比 echoes 的 null 宽容策略更严，题库文案不齐全无消费价值）。答案机制（★消费端必读）：源表没有答案列，正确答案恒存放在源表 option1（即 options[0]，is_correct=true），游戏客户端出题时运行时洗牌显示顺序（MagicHistoryNode / MoggleLessonNode.next_round 字节码；讲解复述 option1 的比例 1152/1223 与 493/624，零反例）。本包忠实源序**不洗牌**——直接按序展示将永远命中第一项，消费端必须自行随机排列选项；is_correct 是唯一事实来源，重排后跟字段走。answer_conflict=true 的题（魔法史 id 101301103，魁地奇世界杯年份）：讲解原文明确指向 option2(1473)，与 option1 约定矛盾，疑似官方数据 bug，本包按运行时约定标 option1 并保留此标记供裁决。文案为游戏原文，保留 <color=xxx>/<link> 富文本标签（游戏内高亮关键词，有提示语义）与 \\n，消费端自行渲染或剥离。theme 为游戏池代码原值（history: theme0..7/99、ugc、none；muggle: theme1/2/99；池的玩家可见名称未在游戏数据中定位到，勿臆测语义）。两个 bank 的 id 空间各自独立，跨 bank 引用一律 bank+id 显式表达。未来扩展（v2 候选）：看图题库 pictionary_question_bank 作为第三个 bank 加入 banks（届时 propertyNames/enum 增项）。版本契约 {schema_version}.{data_version}.0，data_version=YYYYMMDD。",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "data_version",
+  "generated_at",
+  "banks"
+ ],
+ "properties": {
+  "schema_version": {
+   "type": "integer",
+   "minimum": 1,
+   "description": "数据结构版本（单轴）"
+  },
+  "data_version": {
+   "type": "integer",
+   "minimum": 1,
+   "description": "游戏内容刷新版本（YYYYMMDD），与 manifest.json 一致"
+  },
+  "generated_at": {
+   "type": "string",
+   "format": "date-time",
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+   "description": "ISO8601 带时区偏移"
+  },
+  "banks": {
+   "type": "object",
+   "description": "课堂题库注册表：键即 bank id。v1 两 bank 同构（共用答题系统）；新课堂（如看图题）在此加键",
+   "propertyNames": {
+    "enum": [
+     "history_of_magic",
+     "muggle_studies"
+    ]
+   },
+   "required": [
+    "history_of_magic",
+    "muggle_studies"
+   ],
+   "additionalProperties": {
+    "$ref": "#/definitions/bank"
+   }
+  }
+ },
+ "definitions": {
+  "biText": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "zh",
+    "en"
+   ],
+   "properties": {
+    "zh": {
+     "type": "string",
+     "description": "游戏原文（含富文本标签）；空串即导出失败，不存在 null 宽容"
+    },
+    "en": {
+     "type": "string"
+    }
+   }
+  },
+  "bank": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "source_table",
+    "questions",
+    "play_configs"
+   ],
+   "properties": {
+    "id": {
+     "enum": [
+      "history_of_magic",
+      "muggle_studies"
+     ],
+     "description": "与 banks 键一致（校验器核对）"
+    },
+    "source_table": {
+     "type": "string",
+     "description": "dbx_new 源表名（history_question_bank / moggle_question_bank）"
+    },
+    "questions": {
+     "type": "array",
+     "description": "按 id 升序；id 在 bank 内唯一（校验器核对）",
+     "items": {
+      "$ref": "#/definitions/question"
+     }
+    },
+    "play_configs": {
+     "type": "array",
+     "description": "出题配置（history_magic 8 行 / moggle_theme 4 行，按 play_id 升序）",
+     "items": {
+      "$ref": "#/definitions/playConfig"
+     }
+    }
+   }
+  },
+  "question": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "theme",
+    "question",
+    "options",
+    "explanation",
+    "need_close_bilingual"
+   ],
+   "properties": {
+    "id": {
+     "type": "integer",
+     "minimum": 1,
+     "description": "源表键（游戏题 id）；muggle 侧 id 1..643 有删号空洞，原样保留"
+    },
+    "theme": {
+     "type": "string",
+     "description": "游戏池代码原值（不用 enum：热更加新池无需改 schema）。已知值见顶层 description"
+    },
+    "question": {
+     "$ref": "#/definitions/biText",
+     "description": "题干"
+    },
+    "options": {
+     "type": "array",
+     "minItems": 2,
+     "description": "★保持源表顺序未洗牌，正确答案恒在 options[0]（is_correct=true）——消费端展示前必须自行洗牌。no=源表 optionN 的 N（1-based 连续，校验器核对）；未来热更加 option5+ 时数组自然增长",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "no",
+       "is_correct",
+       "text"
+      ],
+      "properties": {
+       "no": {
+        "type": "integer",
+        "minimum": 1
+       },
+       "is_correct": {
+        "type": "boolean",
+        "description": "唯一事实来源；每题恰好一个 true（校验器核对，schema 表达不了跨元素约束）"
+       },
+       "text": {
+        "$ref": "#/definitions/biText"
+       }
+      }
+     }
+    },
+    "explanation": {
+     "$ref": "#/definitions/biText",
+     "description": "老师讲解（宾斯教授 / 麻瓜研究老师），通常复述正确答案"
+    },
+    "answer_conflict": {
+     "type": "boolean",
+     "description": "可选，仅极少数题：讲解原文明确指向非 option1 的选项，与 option1 恒正确约定矛盾（v1 实测仅魔法史 101301103 一题）。true 时本包仍标 option1 正确（按运行时约定），manifest.coverage.answer_conflicts 同步列出"
+    },
+    "need_close_bilingual": {
+     "type": "integer",
+     "enum": [
+      0,
+      1
+     ],
+     "description": "游戏原字段原样：1 = 关闭中英双语字幕显示"
+    },
+    "provider_name": {
+     "type": "string",
+     "description": "可选，仅魔法史 UGC 题（v1 实测 568 题）：出题玩家昵称（源表明文，非文案键）"
+    },
+    "duplicate_of": {
+     "type": "array",
+     "items": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "description": "可选，仅魔法史：共用同一题干的其他题 id（theme0 复用池等）；不含自身（校验器核对）"
+    }
+   }
+  },
+  "playConfig": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "play_id",
+    "num_questions",
+    "seconds_per_question",
+    "theme_quota"
+   ],
+   "properties": {
+    "play_id": {
+     "type": "integer",
+     "minimum": 1,
+     "description": "history_magic.id / moggle_theme 键"
+    },
+    "num_questions": {
+     "type": "integer",
+     "minimum": 0,
+     "description": "每局出题数（num）"
+    },
+    "seconds_per_question": {
+     "type": "integer",
+      "minimum": 0,
+     "description": "每题限时秒数（time）"
+    },
+    "theme_quota": {
+     "type": "array",
+     "description": "主题池配比：从各池抽几题，总和应等于 num_questions（校验器核对；moggle_theme play_id 4 引用不存在的 theme0 属游戏预留配置，原样保留）",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "theme",
+       "count"
+      ],
+      "properties": {
+       "theme": {
+        "type": "string"
+       },
+       "count": {
+        "type": "integer",
+        "minimum": 0
+       }
+      }
+     }
+    },
+    "used_by": {
+     "type": "string",
+     "description": "可选，仅魔法史侧：消费该配置的玩法节点（MagicHistoryNode/Elite/HouseCup，来自脚本侧分析；热更新增 play_id 标「未知玩法节点(待确认)」）。muggle 侧 play_id→战局映射在战斗剧情脚本层，不入包"
+    }
+   }
+  }
+ }
+}
