@@ -1,0 +1,4 @@
+# OS 杂物不入库；数据文件（quiz.json、manifest.json、schema/、check.html）必须入库，构建产物请勿手改。
+.DS_Store
+Thumbs.db
+desktop.ini
