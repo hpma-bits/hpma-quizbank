@@ -2,7 +2,7 @@
  "$schema": "http://json-schema.org/draft-07/schema#",
  "$id": "https://raw.githubusercontent.com/hpma-bits/hpma-quizbank/main/schema/manifest.schema.json",
  "title": "HPMA 课堂答题题库数据包 manifest.json",
- "description": "数据包清单（hpma-bits/hpma-quizbank 专用，结构精简——单数据集无需 datasets 注册表以外的包级扩展位）。v1 (2026-10-09)：单数据集 quiz（魔法史 + 麻瓜研究双 bank，文件 quiz.json）。coverage.teacher_restate_option1 记录讲解逐字复述 option1 的题数——该比例是 option1 恒正确约定的健康度指标，热更后骤降应怀疑官方改了答案存储机制。",
+ "description": "HPMA 课堂答题题库数据包清单（hpma-bits/hpma-quizbank 专用）：单数据集 quiz（魔法史 + 麻瓜研究双 bank，文件 quiz.json）。coverage.teacher_restate_option1 记录讲解逐字复述 option1 的题数——该比例是 option1 恒正确约定的健康度指标，数据刷新后骤降应怀疑答案存储机制变化。",
  "type": "object",
  "additionalProperties": false,
  "required": [
@@ -11,7 +11,7 @@
   "generated_at",
   "locales",
   "datasets",
-    "coverage",
+  "coverage",
   "notes"
  ],
  "properties": {
@@ -69,7 +69,8 @@
      }
     }
    }
-  }  "coverage": {
+  },
+  "coverage": {
    "type": "object",
    "additionalProperties": false,
    "required": [
@@ -112,7 +113,7 @@
       "type": "string",
       "pattern": "^[a-z_]+:[0-9]+$"
      },
-     "description": "讲解与 option1 约定冲突的题，格式 bank:question_id（v1 = [\"history_of_magic:101301103\"]）"
+     "description": "讲解与源序 option1 冲突的题（源序口径检测事实），格式 bank:question_id；v2 起此类题经用户裁决按原著口径改判标答并携带 quiz.json 内 answer_adjudicated 说明（当前仅 history_of_magic:101301103）"
     },
     "ugc_questions": {
      "type": "integer",

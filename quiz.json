@@ -1,7 +1,7 @@
 {
- "schema_version": 1,
+ "schema_version": 2,
  "data_version": 20261009,
- "generated_at": "2026-10-09T22:27:09+08:00",
+ "generated_at": "2026-10-09T22:59:16+08:00",
  "banks": {
   "history_of_magic": {
    "id": "history_of_magic",
@@ -58180,7 +58180,7 @@
      "options": [
       {
        "no": 1,
-       "is_correct": true,
+       "is_correct": false,
        "text": {
         "zh": "公元1467年",
         "en": "AD 1467"
@@ -58188,7 +58188,7 @@
       },
       {
        "no": 2,
-       "is_correct": false,
+       "is_correct": true,
        "text": {
         "zh": "公元1473年",
         "en": "AD 1473"
@@ -58216,7 +58216,11 @@
       "en": "That's it! The correct answer is AD 1473."
      },
      "need_close_bilingual": 0,
-     "answer_conflict": true
+     "answer_conflict": true,
+     "answer_adjudicated": {
+      "correct_no": 2,
+      "note": "用户裁决(2026-10-09)按原著口径: 《神奇的魁地奇球》载世界杯自1473 年起每四年一届, 题目讲解同指 1473(option2); 原始记录 option1=1467 与之矛盾, 数据集标答以裁决为准。"
+     }
     }
    ],
    "play_configs": [
