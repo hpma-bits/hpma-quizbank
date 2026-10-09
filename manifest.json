@@ -1,7 +1,7 @@
 {
- "schema_version": 1,
+ "schema_version": 2,
  "data_version": 20261009,
- "generated_at": "2026-10-09T22:27:09+08:00",
+ "generated_at": "2026-10-09T22:59:16+08:00",
  "locales": [
   "zh",
   "en"
@@ -31,10 +31,10 @@
   }
  },
  "notes": [
-  "★答案顺序：选项保持源序未洗牌，正确答案恒在 options[0]（is_correct=true）；出题时运行时洗牌显示顺序，消费端展示前必须自行随机排列选项，is_correct 是唯一判定基准，重排后跟字段走。",
-  "answer_conflict=true 的题：讲解原文明确指向非 options[0] 的选项，与 option1 恒正确约定矛盾（v1 实测仅魔法史 101301103 一题，疑似官方数据 bug）；本包仍按运行时约定标 options[0] 正确，coverage.answer_conflicts 列出供裁决。",
+  "★答案顺序：选项保持源序未洗牌，默认正确答案在 options[0]（is_correct=true）；出题时运行时洗牌显示顺序，消费端展示前必须自行随机排列选项，is_correct 是唯一判定基准，重排后跟字段走。已裁决例外题（answer_adjudicated，v2 起见 quiz.schema.json）的正确答案不在 options[0]，以 is_correct 实际标记为准。",
+  "answer_conflict=true 的题：讲解原文明确指向非 options[0] 的选项，与 option1 恒正确约定矛盾（源序口径的检测事实）。v2 起此类题经用户裁决（2026-10-09）按原著口径改判标答并携带 answer_adjudicated 说明——当前仅魔法史 101301103（魁地奇世界杯年份）：原著《神奇的魁地奇球》与讲解均指 1473（option2），源序 option1=1467 属录错选项顺序；注意运行时仍按 option1 判分，数据集标答与判分在此一题上刻意不同。",
   "文案为游戏原文，保留 <color>/<link> 富文本标签（游戏内高亮提示语义）与换行，消费端自行渲染或剥离；zh/en 实测 100% 覆盖，任一字段为空串即导出失败（无 null 宽容）。",
-  "theme 为游戏池代码原值（history: theme0..7/99/ugc/none；muggle: theme1/2/99），池的玩家可见名称未在游戏数据中定位到，勿臆测语义。",
+  "theme 为游戏池代码原值（history: theme0..7/99/ugc/none；muggle: theme1/2/99），池的玩家可见名称未在游戏数据中定位到（2026-10-09 调研定案：游戏内不存在主题显示名，theme 仅是抽题配额分组键），勿臆测语义。",
   "muggle_studies 的 id 空间有删号空洞（1..643 缺 19 号），原样保留；两个 bank 的 id 空间各自独立，跨 bank 引用一律 bank+id 显式表达。",
   "coverage.teacher_restate_option1（讲解归一化后复述 option1 的题数）是 option1 恒正确约定的健康度指标，热更后骤降应怀疑官方改了答案存储机制。",
   "muggle_studies play_id 4 的 theme_quota 引用不存在的 theme0，属游戏预留配置，原样保留。"
