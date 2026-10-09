@@ -222,8 +222,10 @@ zh: {
   ugc:'玩家出题', provider:'出题玩家',
   ncb:'关双语', ncbTip:'need_close_bilingual=1(游戏原字段:关闭中英双语显示)',
   dup:'共用题干',
-  conflictWarn:'讲解原文与标答矛盾',
-  conflictExplain:'注意:本题讲解原文与标答(option1)矛盾,官方数据疑似 bug,此处仍按运行时约定判 option1 正确。',
+  conflictWarn:'讲解原文与源表标答矛盾(已裁决)',
+  conflictExplain:'注意:本题讲解原文与源表标答(option1)矛盾,官方数据疑似 bug。',
+  conflictAdjPrefix:'数据集已裁决按原著口径: 正确答案为 option',
+  conflictAdjMid:'(is_correct 已标注);但游戏运行时仍按 option1 判分,游戏内选它会被判错。裁决说明: ',
   explanation:'教授讲解',
   mSummary:'数据包清单(manifest.json + quiz.json 契约)',
   mSchema:'schema_version', mData:'data_version', mGen:'generated_at',
@@ -252,8 +254,10 @@ en: {
   ugc:'UGC', provider:'Question author',
   ncb:'bi-off', ncbTip:'need_close_bilingual=1 (game field: bilingual subtitles off)',
   dup:'Shared stem',
-  conflictWarn:'Explanation contradicts keyed answer',
-  conflictExplain:'Note: the explanation text contradicts the keyed answer (option1) — likely an official data bug. Grading still follows the runtime convention (option1 correct).',
+  conflictWarn:'Explanation contradicts keyed answer (adjudicated)',
+  conflictExplain:'Note: the explanation text contradicts the keyed answer (option1) — likely an official data bug.',
+  conflictAdjPrefix:'Adjudicated per book canon: the correct answer is option',
+  conflictAdjMid:' (is_correct marks it); the game runtime still grades option1, so picking it in-game counts wrong. Note: ',
   explanation:"Professor's explanation",
   mSummary:'Bundle manifest (manifest.json + quiz.json contract)',
   mSchema:'schema_version', mData:'data_version', mGen:'generated_at',
@@ -437,8 +441,12 @@ function cardHTML(b, q, newShuf){
   }).join('');
   const qtext = richToHtml((q.question && (q.question[lang] ?? q.question.zh)) ?? '');
   const etext = richToHtml((q.explanation && (q.explanation[lang] ?? q.explanation.zh)) ?? '');
+  const adj = q.answer_adjudicated;
+  const warnText = adj
+    ? t.conflictAdjPrefix + adj.correct_no + t.conflictAdjMid + escHtml(adj.note)
+    : t.conflictExplain;
   const expl = '<div class="expl"><b>' + escHtml(t.explanation) + '</b>'
-    + (conflict ? ' <span class="warninline">⚠ ' + escHtml(t.conflictExplain) + '</span>' : '')
+    + (conflict ? ' <span class="warninline">⚠ ' + escHtml(warnText) + '</span>' : '')
     + '<br>' + etext + '</div>';
   return '<article class="qcard' + (answered ? ' graded' : '') + (conflict ? ' conflictc' : '') +
     '" id="qc-' + escHtml(b.id) + '-' + q.id + '" data-bank="' + escHtml(b.id) + '" data-qid="' + q.id + '">' +
