@@ -66,6 +66,7 @@ references are always bank + id):
   "explanation": {"zh": "…", "en": "…"},
   "need_close_bilingual": 0,
   "answer_conflict": true,
+  "answer_adjudicated": {"correct_no": 2, "note": "…"},
   "provider_name": "玩家昵称",
   "duplicate_of": [17, 92]
 }
@@ -85,19 +86,38 @@ references are always bank + id):
 - `duplicate_of` — ids of same-bank questions sharing the stem (54 questions).
 - `answer_conflict` — see next section.
 
-## answer_conflict
+## answer_conflict / answer_adjudicated — ⚠ the one adjudicated exception
 
-One known case: **`history_of_magic:101301103`**. Its explanation text
-points to a different option (option 2) than the runtime convention
-(option 1 = correct). The bundle still marks **option 1** as correct,
-following the game's runtime convention; the question is flagged with
-`answer_conflict: true` and listed in `manifest.coverage.answer_conflicts`
-as `bank:id`, so consumers can adjudicate.
+One known case: **`history_of_magic:101301103`** (Quidditch World Cup year).
+Its source row keys option 1 (=1467) as correct, but both the explanation
+text and book canon (*Quidditch Through the Ages*: the World Cup has been
+held every four years since **1473**) point to option 2. The 1467/1473
+mismatch is an official data bug (options recorded in the wrong order).
+
+**Adjudication (2026-10-09, dataset owner): the dataset marks option 2
+(1473) as correct**, per book canon. Consequences:
+
+- that question carries `answer_conflict: true` (source-table fact: the
+  explanation contradicts keyed option 1) **and** `answer_adjudicated:
+  {correct_no: 2, note: …}` (the adjudication record);
+- its `is_correct` sits on option 2, **not** `options[0]` — the only
+  question in the dataset where this happens;
+- ⚠ **the game runtime still grades option 1**: a player answering 1473
+  in-game is marked wrong. The dataset answer and in-game grading
+  deliberately differ on this single question.
+
+`manifest.coverage.answer_conflicts` lists it as `bank:id`. New conflicts
+surfacing in future hot updates are flagged by the extractors' answer-
+convention health check and stay on the option-1 convention until
+adjudicated.
 
 ## Versioning
 
 Version contract: `{schema_version}.{data_version}.0` — e.g.
-`1.20261009.0`, where `data_version` is `YYYYMMDD` of the extract. Both
+`2.20261009.0`, where `data_version` is `YYYYMMDD` of the extract.
+Schema v2 (2026-10-09) adds the adjudicated-answer exception
+(`answer_adjudicated`; `is_correct` no longer guaranteed on
+`options[0]` — see the section above). Both
 `quiz.json` and `manifest.json` always share the same version (single-axis
 versioning). Git tags: `quiz-v{S}.{D}.0`, e.g. `quiz-v1.20261009.0`.
 
